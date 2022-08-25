@@ -48,7 +48,8 @@ ShaderProgramSource Shader::ParseShader(const std::string& filePath)
     return { ss[0].str(), ss[1].str() };
 }
 
-bool Shader::CompileShader(unsigned int type, const std::string& source) {
+//Compiles the shader and returns its id
+unsigned int Shader::CompileShader(unsigned int type, const std::string& source) {
     unsigned int id = glCreateShader(type);
     const char* src = source.c_str();
     glShaderSource(id, 1, &src, nullptr);
@@ -62,7 +63,7 @@ bool Shader::CompileShader(unsigned int type, const std::string& source) {
         glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
         char* message = (char*)alloca(length * sizeof(char));
         glGetShaderInfoLog(id, length, &length, message);
-        std::cout << "[OPENGL ERROR] Failed to compile " << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << std::endl;
+        std::cout << "[OPENGL ERROR] Failed to compile " << (type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT") << " shader" << std::endl;
         std::cout << "[OPENGL ERROR] Shader Error - " << message << std::endl;
 
         glDeleteShader(id);
@@ -81,6 +82,21 @@ unsigned int Shader::CreateShader(const std::string& vertexShader, const std::st
     glAttachShader(program, vs);
     glAttachShader(program, fs);
     glLinkProgram(program);
+
+    int success;
+
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    if (!success) {
+        int length;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+        char* msg = (char*)alloca(length * sizeof(char));
+        glGetProgramInfoLog(program, length, &length, msg);
+        std::cout << "[OPENGL ERROR] Failed to link program" << std::endl;
+        std::cout << "[OPENGL ERROR] Shader Program Error - " << msg << std::endl;
+
+        glDeleteProgram(program);
+    }
+
     glValidateProgram(program);
 
     glDeleteShader(vs);
@@ -99,17 +115,29 @@ void Shader::Unbind() const
     glUseProgram(0);
 }
 
+int Shader::GetUniformLocation(const std::string& name)
+{
+    //PROBLEM HERE UNIFORM NOT FOUND ????
+    Bind();
+    int location = glGetUniformLocation(m_RendererID, name.c_str());
+    if (location == -1)
+        std::cout << "Warning: Uniform '" << name << "' doesn't exist, remember, if not get the use it get the yeet" << std::endl;
+  
+    return location;
+}
+
+void Shader::SetUniformMat4f(const std::string& name, glm::mat4& v0) {
+
+    glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &v0[0][0]);
+}
+
 void Shader::SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3)
 {
     glUniform4f(GetUniformLocation(name), v0, v1, v2, v3);
 }
 
-GLint Shader::GetUniformLocation(const std::string& name)
+void Shader::SetUniform3f(const std::string& name, float v1, float v2, float v3) 
 {
-    //PROBLEM HERE UNIFORM NOT FOUND ????
-    GLint location = glGetUniformLocation(m_RendererID, name.c_str());
-    if (location == -1)
-        std::cout << "Warning: Uniform '" << name << "' doesn't exist, remember, if not used it get yeet" << std::endl;
-        
-    return location;
+    glUniform3f(GetUniformLocation(name), v1, v2, v3);
 }
+
