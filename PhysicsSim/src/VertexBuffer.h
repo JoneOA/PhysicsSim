@@ -1,5 +1,9 @@
 #pragma once
 
+#include <iostream>
+#include "Shape.h"
+#include <vector>
+
 class VertexBuffer 
 {
 private:
@@ -8,6 +12,8 @@ public:
 	VertexBuffer(const void* data, unsigned int size);
 	~VertexBuffer();
 
+	void Update(const std::vector<Shape*>& shapes);
+	void UpdateBuffer(const void* data, unsigned int size, unsigned int offset);
 	void Bind() const;
 	void Unbind() const;
 };
