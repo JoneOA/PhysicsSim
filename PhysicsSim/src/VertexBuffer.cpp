@@ -1,12 +1,11 @@
 #include "VertexBuffer.h"
 #include "Renderer.h"
 
-
 VertexBuffer::VertexBuffer(const void* data, unsigned int size)
 {
     glGenBuffers(1, &m_RendererID);
     glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-    glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
 }
 
 VertexBuffer::~VertexBuffer()
@@ -25,6 +24,12 @@ void VertexBuffer::Update(const std::vector<Shape*>& shapes)
 void VertexBuffer::UpdateBuffer(const void* data, unsigned int size, unsigned int offset) {
     Bind();
     glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
+}
+
+void VertexBuffer::AddObject(const void* data, unsigned int size)
+{
+    glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+    glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
 }
 
 void VertexBuffer::Bind() const

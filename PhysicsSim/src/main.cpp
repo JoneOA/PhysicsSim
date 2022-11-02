@@ -30,9 +30,36 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
-int noOfShapes = 2;
+int noOfShapes = 10;
 
 // TODO: Tidy main function, abstract into Application.cpp
+std::vector<Shape*> squares;
+std::vector<float> vertexAr;
+std::vector<unsigned int> indexAr;
+
+void SpawnCube(GLFWwindow* window, int button, int action, int mods) {
+    if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        double xPos = 0, yPos = 0;
+        glfwGetCursorPos(window, &xPos, &yPos);
+
+        yPos = 1080 - yPos;
+
+        Square *s = new Square(xPos, yPos, 0);
+        std::cout << xPos << ", " << yPos << "\n";
+
+        squares.push_back(s);
+
+        for (int i = 0; i < s->vertexPos.size(); i++)
+        {
+            vertexAr.push_back(s->vertexPos[i]);
+        }
+
+        for (int i = 0; i < s->indexPos.size(); i++)
+        {
+            indexAr.push_back(s->indexPos[i] + 4 * (squares.size() - 1));
+        } 
+    }
+}
 
 int main()
 {
@@ -55,6 +82,8 @@ int main()
 
     glfwSwapInterval(0);
     
+    glfwSetMouseButtonCallback(window, SpawnCube);
+    
     if (glewInit() != GLEW_OK)
         std::cout << "GLEW ERROR" << std::endl;
 
@@ -64,17 +93,14 @@ int main()
 
     Physics physics(c);
 
-    std::vector<float> vertexAr;
-    std::vector<unsigned int> indexAr;
-
-
     //TODO: Shape generator and vertex/index buffer loading 
-    std::vector<Shape*> squares;
 
     for (int i = 0; i < noOfShapes; i++)
     {
-        squares.push_back(new Square(i * 0.2 , i * 0.4));
+        squares.push_back(new Square(i * 0.1, i * 0.05));
     }
+
+    int noOfSquares = squares.size();
 
     for (int i = 0; i < noOfShapes; i++)
     {
@@ -106,12 +132,9 @@ int main()
 
     va.AddBuffer(vb, layout);
 
-
     glm::mat4 proj = glm::ortho(0.0f, 1080.0f, 0.0f, 1080.0f, 0.1f, 1080.0f);
     glm::mat4 view  = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
     glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
-
-    //model = glm::scale(model, glm::vec3(100.0f));
 
     glm::mat4 mvp = proj * view * model;
 
@@ -124,11 +147,15 @@ int main()
         
     currTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
+    int lastSquares = noOfSquares;
+
     /* Loop until the user closes the window */
      while (!glfwWindowShouldClose(window))
     {
         /* Render here */
         renderer.Clear();
+
+        noOfSquares = squares.size();
  
         frameTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count() - currTime;
         currTime += frameTime;
@@ -142,11 +169,15 @@ int main()
         }
         //TODO: Interpolate "left over" time from accumalator, stretch goal maybe
 
-        c.CheckCollision(*squares[0], *squares[1]);
+        if (lastSquares != noOfSquares)
+        {
+            vb.AddObject(&vertexAr[0], vertexAr.size() * sizeof(float));
+            ib.AddObject(&indexAr[0], indexAr.size() * sizeof(unsigned int));
+        }
 
         vb.Update(squares);
 
-        va.UpdateArray(vb, layout);
+        //va.UpdateArray(vb, layout);
 
         renderer.Draw(va, ib, shader);
 
@@ -155,6 +186,8 @@ int main()
 
         /* Poll for and process events */
         glfwPollEvents();
+
+        lastSquares = noOfSquares;
     }
 
     shader.~Shader();

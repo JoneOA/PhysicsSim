@@ -1,6 +1,22 @@
 #include "Collision.h";
 #include <iostream>
 
+struct MinMax
+{
+	float min;
+	float max;
+};
+
+float Dot(std::vector<float>& vec1, float* vec2)
+{
+	return { vec1[0] * vec2[0] + vec1[1] * vec2[1] };
+}
+
+double operator*(std::vector<float>& vec1, std::vector<double>& vec2)
+{
+	return { vec1[0] * vec2[0] + vec1[1] * vec2[1] };
+}
+
 bool Overlap(double c1, float hs1, double c2, float hs2)
 {
 	if (c1 + hs1 >= c2 - hs2 && c1 - hs1 <= c2 + hs2)
@@ -8,43 +24,118 @@ bool Overlap(double c1, float hs1, double c2, float hs2)
 	return false;
 }
 
-bool Collision::CheckCollision(Shape& shape1, Shape& shape2)
+std::vector<float> Normalise(std::vector<float>& axis, std::vector<float>& vector)
 {
-	std::vector<double> pos1 = shape1.GetPosition();
-	float halfSize1 = shape1.GetHalfSize();
+	float sqrt = std::sqrt((axis[0] * axis[0]) + (axis[1] * axis[1]));
 
-	std::vector<double> pos2 = shape2.GetPosition();
-	float halfSize2 = shape2.GetHalfSize();
+	return { vector[0] / sqrt, vector[1] / sqrt };
+}
 
+float VectorLength(std::vector<float>& vector)
+{
+	return (std::sqrt((vector[0] * vector[0]) + (vector[1] * vector[1])));
+}
 
-	if (Overlap(pos1[0], halfSize1, pos2[0], halfSize2) && Overlap(pos1[1], halfSize1, pos2[1], halfSize2))
+MinMax ProjectToNormal(std::vector<float>& normal, std::vector<float>& verticies)
+{
+	
+	float min = INT_MAX;
+	float max = INT_MIN;
+	float vertex[2] = {0, 0};
+
+	for (int i = 0; i < verticies.size(); i += 2)
 	{
-		return true;
+		vertex[0] = verticies[0 + i];
+		vertex[1] = verticies[1 + i];
+
+		float t = Dot(normal, vertex);
+
+		if (t < min)
+			min = t;
+		if (t > max)
+			max = t;
 	}
 
-	return false;
+	return { min, max };
 }
 
-std::vector<double> Collision::CollisionDirection(Shape& shape1, Shape& shape2)
+bool Collision::SeparateAxisCollision(Shape& shape1, Shape& shape2) 
 {
-	std::vector<double> pos1 = shape1.GetPosition();
-	std::vector<double> vel1 = shape1.GetVelocity();
+	float depth = INT_MAX;
 
-	std::vector<double> pos2 = shape2.GetPosition();
-	std::vector<double> vel2 = shape2.GetVelocity();
+	for (int i = 0; i < shape1.vertexPos.size() / 2; i += 2)
+	{
+		MinMax A, B;
 
-	double t = pos1[0] - pos2[0] + pos1[1] - pos2[1];
+		std::vector<float> axis = { shape1.vertexPos[(2 + i) % 8] - shape1.vertexPos[0 + i] , shape1.vertexPos[(3 + i) % 8] - shape1.vertexPos[1 + i] };
 
-	std::vector<double> impactDirection;
+		axis = Normalise(axis, axis);
 
-	if (abs(pos1[0] - pos2[0]) > abs(pos1[1] - pos2[1]))
-		impactDirection = { 1 , 0 };
-	else
-		impactDirection = { 0 , 1 };
+		A = ProjectToNormal(axis, shape1.vertexPos);
+		B = ProjectToNormal(axis, shape2.vertexPos);
 
+		if (A.min >= B.max || B.min >= A.max)
+			return false;
 
-	return impactDirection;
+		float normalDepth = std::min(B.max - A.min, A.max - B.min);
+
+		if (normalDepth < depth)
+		{
+			depth = normalDepth;
+			m_CollisionDepth = normalDepth;
+			m_CollisionNormal = axis;
+		}
+	}
+
+	for (int i = 0; i < shape2.vertexPos.size() / 2; i += 2)
+	{
+		MinMax A, B;
+
+		std::vector<float> axis = { shape2.vertexPos[(2 + i) % 8] - shape2.vertexPos[0 + i], shape2.vertexPos[(3 + i) % 8] - shape2.vertexPos[1 + i] } ;
+
+		axis = Normalise(axis, axis);
+
+		A = ProjectToNormal(axis, shape1.vertexPos);
+		B = ProjectToNormal(axis, shape2.vertexPos);
+
+		if (A.min >= B.max || B.min >= A.max)
+			return false;
+
+		float normalDepth = std::min(B.max - A.min, A.max - B.min);
+
+		if (normalDepth < depth)
+		{
+			depth = normalDepth;
+			m_CollisionDepth = normalDepth;
+			m_CollisionNormal = axis;
+		}
+	}
+
+	std::vector<double> shape1Pos = shape1.GetPosition();
+	std::vector<double> shape2Pos = shape2.GetPosition();
+
+	std::vector<double> direction = {shape2Pos[0] - shape1Pos[0], shape2Pos[1] - shape1Pos[1]};
+
+	m_CollisionDirection = m_CollisionNormal * direction > 0 ? -1 : 1;
+
+	return true;
 }
+
+std::vector<float> Collision::GetCollisionNormal()
+{
+	return m_CollisionNormal;
+}
+
+int Collision::GetCollisionDirection()
+{
+	return m_CollisionDirection;
+}
+
+float Collision::GetCollisionDepth()
+{
+	return m_CollisionDepth;
+}
+
 
 void Collision::OnUpdate()
 {

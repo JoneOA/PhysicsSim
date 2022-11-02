@@ -21,6 +21,8 @@ public:
 
 	~Physics();
 
+	double ResolveImpulse(Shape& object1, Shape& object2, int64_t delta);
+
 	void OnUpdate(std::vector<Shape*>& shape, int64_t delta);
 	
 };

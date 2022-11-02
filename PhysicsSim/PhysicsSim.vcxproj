@@ -160,6 +160,7 @@
     <ClCompile Include="src\IndexBuffer.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Physics.cpp" />
+    <ClCompile Include="src\PhySiMaths.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\vendor\glm\detail\glm.cpp" />
@@ -313,6 +314,7 @@
     <ClInclude Include="src\Header.h" />
     <ClInclude Include="src\IndexBuffer.h" />
     <ClInclude Include="src\Physics.h" />
+    <ClInclude Include="src\PhySiMaths.h" />
     <ClInclude Include="src\Renderer.h" />
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="res\shapes\Shape.h" />

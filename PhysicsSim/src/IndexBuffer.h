@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Shape.h"
+
 class IndexBuffer 
 {
 private:
@@ -8,6 +10,12 @@ private:
 public:
 	IndexBuffer(const unsigned int* data, unsigned int count);
 	~IndexBuffer();
+
+	void Update(const std::vector<Shape*>& shapes);
+
+	void UpdateBuffer(const unsigned int* data, unsigned int size, unsigned int offset);
+
+	void AddObject(const void* data, unsigned int size);
 
 	void Bind() const;
 	void Unbind() const;

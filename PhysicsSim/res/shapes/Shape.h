@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <array>
 #include <chrono>
 
 struct Force {
@@ -12,6 +13,10 @@ class Shape {
 private:
 
 public:
+
+    float m_FurthestPointFromC;
+
+    double m_cX, m_cY, m_cR;
 
     std::vector<float> vertexPos;
     std::vector<unsigned int> indexPos;
@@ -38,4 +43,10 @@ public:
     virtual std::vector<double> GetPosition() = 0;
 
     virtual std::vector<double> GetVelocity() = 0;
+
+    virtual void Move(std::vector<float> normal, float depth) = 0;
+
+    virtual double GetMass() = 0;
+
+    virtual void SetVelocity(double newX, double newY) = 0;
 };

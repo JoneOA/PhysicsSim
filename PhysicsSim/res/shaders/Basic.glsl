@@ -20,5 +20,5 @@ uniform vec4 u_Color;
 
 void main() 
 {
-	fragColor = vec4(pos.x / 1080.0f, pos.y / 1080.0f, 1.0f - ((pos.x + pos.y) / (2 * 1080.0f)),1.0f);
+	fragColor = vec4(1.0f);
 };

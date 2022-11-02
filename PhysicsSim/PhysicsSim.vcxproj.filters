@@ -45,6 +45,9 @@
     <ClCompile Include="src\Collision.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\PhySiMaths.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\Basic.glsl" />
@@ -1341,6 +1344,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Collision.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhySiMaths.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

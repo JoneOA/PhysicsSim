@@ -26,7 +26,8 @@ void VertexArray::AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& la
 
 }
 
-void VertexArray::UpdateArray(const VertexBuffer& vb, const VertexBufferLayout& layout) {
+void VertexArray::UpdateArray(const VertexBuffer& vb, const VertexBufferLayout& layout) 
+{
 	Bind();
 	vb.Bind();
 	const auto& elements = layout.GetElements();
